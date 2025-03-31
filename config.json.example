@@ -1,0 +1,27 @@
+{
+    "lessons": 1,
+    "users": [
+        {
+            "username": "your_duolingo_username_1",
+            "jwt_token": "YOUR_JWT_TOKEN_HERE_1",
+            "enabled": true
+        },
+        {
+            "username": "your_duolingo_username_2",
+            "jwt_token": "YOUR_JWT_TOKEN_HERE_2",
+            "enabled": true
+        },
+        {
+            "username": "your_duolingo_username_3",
+            "jwt_token": "YOUR_JWT_TOKEN_HERE_3",
+            "enabled": true
+        }
+        // Add more users as needed
+    ],
+    "settings": {
+        "delay_between_users": 5,
+        "log_file": "logs/duolingo.log",
+        "max_retries": 3,
+        "retry_delay": 10 // Delay in seconds
+    }
+} 

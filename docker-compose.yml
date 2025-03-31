@@ -1,0 +1,22 @@
+services:
+  duolingo-autostreak:
+    build: .
+    container_name: duolingo-autostreak
+    restart: unless-stopped
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./logs:/app/logs
+      - ./results.json:/app/results.json
+    environment:
+      - TZ=Europe/Moscow
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - duolingo-network
+
+networks:
+  duolingo-network:
+    driver: bridge 

@@ -1,36 +1,31 @@
-# Use the official Node.js image
-FROM node:14
+# Используем Node.js 20 slim образ
+FROM node:20-slim
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+# Создаем непривилегированного пользователя
+RUN useradd -m -r -s /bin/bash duolingo
 
-# Set the working directory inside the container
+# Создаем директорию для приложения
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package.json package-lock.json ./
+# Копируем package.json и package-lock.json
+COPY package*.json ./
 
-# Install dependencies
+# Устанавливаем зависимости
 RUN npm install
 
-# Copy the rest of the application code
+# Копируем остальной код приложения
 COPY . .
 
-# Give execute permission to the cron job script
-RUN chmod +x /app/get-log.sh
+# Создаем директорию для логов и настраиваем права
+RUN mkdir -p /app/logs && \
+    chown -R duolingo:duolingo /app && \
+    chmod -R 755 /app
 
-# Configure the cron
-# Copy file to the cron.d directory
-COPY cron /etc/cron.d/cron
+# Принудительно удаляем results.json, если это директория
+RUN rm -rf /app/results.json
 
-# Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/cron
+# Переключаемся на непривилегированного пользователя
+USER duolingo
 
-# Apply cron job
-RUN crontab /etc/cron.d/cron
-
-# Create the log file to be able to run tail
-RUN touch /var/log/cron.log
-
-# Start the cron
-CMD cron && tail -f /var/log/cron.log
+# Запускаем основной скрипт Node.js
+CMD ["node", "duolingo.js"]
