@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apetrochenko/duolingo-autostreak.git"
+    "url": "git@github.com:petrochen/duolingo-autostreak.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/apetrochenko/duolingo-autostreak/issues"
+    "url": "https://github.com/petrochen/duolingo-autostreak/issues"
   },
-  "homepage": "https://github.com/apetrochenko/duolingo-autostreak#readme",
+  "homepage": "https://github.com/petrochen/duolingo-autostreak#readme",
   "dependencies": {
     "dotenv": "^16.4.5",
     "node-fetch": "^3.3.2"

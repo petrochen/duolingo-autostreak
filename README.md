@@ -4,7 +4,7 @@ A Dockerized Node.js script to automatically maintain your Duolingo streak for m
 
 This script runs continuously in a Docker container, performs a configurable number of lessons for each enabled user, and then waits 24 hours before repeating the cycle.
 
-This project is a modified version of [Michael1337/duolingo-autostreak](https://github.com/Michael1337/duolingo-autostreak) with some improvements.
+This project is a fork of [Michael1337/duolingo-autostreak](https://github.com/Michael1337/duolingo-autostreak) with multi-user support and other improvements.
 
 ## Features
 
@@ -25,8 +25,8 @@ This project is a modified version of [Michael1337/duolingo-autostreak](https://
 
 1.  **Clone or Download:** Get the project files onto your system.
     ```bash
-    # git clone <repository_url> # If you cloned it
-    # cd duolingo-autostreak
+    git clone git@github.com:petrochen/duolingo-autostreak.git
+    cd duolingo-autostreak
     ```
 
 2.  **Get Duolingo JWT Token:** You need a JWT token for each user you want to manage.
@@ -104,9 +104,33 @@ Use the `manage.sh` script to control the container:
 -   `results.json`: Stores the results of the last run (Created automatically if missing and volume is mounted).
 -   `logs/`: Directory containing the application log file (Created automatically if missing and volume is mounted).
 
+## Security Warnings ⚠️
+
+-   **Never commit `config.json`** - It contains your JWT tokens which grant full access to your Duolingo accounts
+-   **Never share your JWT tokens** - They are equivalent to your password
+-   **Never commit `results.json`** - It contains your usernames
+-   **Keep your logs private** - They may contain sensitive information
+-   **Review your code before pushing** - Make sure no sensitive data is included
+
 ## Changes from the original project
 
--   Improved error handling and logging.
--   Timezone configuration for Europe/Moscow in docker-compose.yml.
--   Additional comments for ease of use.
+-   **Multi-User Support**
+    - Added ability to manage multiple Duolingo accounts simultaneously
+    - Implemented individual user enable/disable functionality
+    - Added per-user error handling and retry logic
+    - Added user-specific results tracking
+
+-   **Improved Docker Setup**
+    - Implemented proper volume mounting and logging
+    - Added container restart policy
+
+-   **Better Error Handling**
+    - Added structured logging with timestamps
+    - Implemented log rotation and critical error tracking
+    - Added automatic log directory management
+
+-   **Enhanced Security**
+    - Implemented non-root user in container
+    - Added proper file permissions
+    - Improved configuration file handling
 
