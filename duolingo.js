@@ -51,9 +51,34 @@ function loadConfig(configPath) {
 	}
 }
 
+// Function to get random time for next execution (8 AM to 11 PM)
+function getNextExecutionTime() {
+	const tomorrow = new Date();
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	
+	// Random hour between 8 AM and 11 PM (15 hour window)
+	const hour = 8 + Math.floor(Math.random() * 15);
+	const minute = Math.floor(Math.random() * 60);
+	
+	tomorrow.setHours(hour, minute, 0, 0);
+	
+	const msUntilExecution = tomorrow - Date.now();
+	return msUntilExecution;
+}
+
+// Function to get variable lesson count
+function getDailyLessonCount() {
+	const rand = Math.random();
+	if (rand < 0.5) return 1;      // 50% - 1 lesson
+	if (rand < 0.8) return 2;      // 30% - 2 lessons
+	return 3;                       // 20% - 3 lessons
+}
+
 // Function to complete lessons for a user
 async function doLessonsForUser(jwtToken, username, config, logger, attempt = 1) {
-	const { lessons: numLessonsToComplete, settings } = config;
+	// Use variable lesson count instead of fixed config value
+	const numLessonsToComplete = getDailyLessonCount();
+	const { settings } = config;
 	const { max_retries, retry_delay } = settings;
 	logger.info(`Starting lessons for user ${username} (Attempt ${attempt})...`);
 	const headers = {
@@ -116,21 +141,22 @@ async function doLessonsForUser(jwtToken, username, config, logger, attempt = 1)
 			}
 			const sessionData = await sessionResponse.json();
 
-			// Simulate lesson completion
-			const timeTaken = Math.floor(Math.random() * (90 - 60 + 1) + 60); // Random time between 60 and 90 seconds
-			await new Promise(resolve => setTimeout(resolve, timeTaken * 100)); // Delay to simulate lesson time
+			// Simulate realistic lesson completion time (3-6 minutes)
+			const timeTaken = 180 + Math.floor(Math.random() * 180); // Random time between 180-360 seconds (3-6 minutes)
+			logger.info(`Simulating lesson completion (${Math.round(timeTaken / 60)} minutes)...`);
+			await new Promise(resolve => setTimeout(resolve, timeTaken * 1000)); // Delay to simulate lesson time
 
 			const resultResponse = await fetch(`https://www.duolingo.com/2017-06-30/sessions/${sessionData.id}`, {
 				method: 'PUT',
 				headers: { ...headers, 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					...sessionData,
-					heartsLeft: 0,
+					heartsLeft: Math.floor(Math.random() * 3) + 1,  // 1-3 hearts left (more realistic)
 					startTime: Math.floor((Date.now() - timeTaken * 1000) / 1000),
 					enableBonusPoints: false,
 					endTime: Math.floor(Date.now() / 1000),
 					failed: false,
-					maxInLessonStreak: 9,
+					maxInLessonStreak: Math.floor(Math.random() * 7) + 3,  // 3-9 streak (variable performance)
 					shouldLearnSkills: true
 				}),
 			});
@@ -144,6 +170,13 @@ async function doLessonsForUser(jwtToken, username, config, logger, attempt = 1)
 			totalXpGained += xpGained;
 			lessonsCompleted++;
 			logger.success(`Lesson ${lessonsCompleted}/${numLessonsToComplete} for ${username} completed. Gained ${xpGained} XP.`);
+			
+			// Add realistic pause between lessons
+			if (lessonsCompleted < numLessonsToComplete) {
+				const pauseSeconds = 30 + Math.floor(Math.random() * 120); // 30 seconds to 2.5 minutes
+				logger.info(`Taking a ${Math.round(pauseSeconds)} second break before next lesson...`);
+				await new Promise(resolve => setTimeout(resolve, pauseSeconds * 1000));
+			}
 		}
 
 		logger.success(`All ${numLessonsToComplete} lessons for ${username} completed. Total XP gained: ${totalXpGained}.`);
@@ -200,10 +233,11 @@ async function main() {
 
 		logger.info("--- Lesson execution cycle completed ---");
 
-		// Wait 24 hours before next run
-		const waitTimeHours = 24;
-		const waitTimeMilliseconds = waitTimeHours * 60 * 60 * 1000;
-		logger.info(`Waiting ${waitTimeHours} hours until next run...`);
+		// Calculate random time for next run (tomorrow between 8 AM and 11 PM)
+		const waitTimeMilliseconds = getNextExecutionTime();
+		const waitTimeHours = Math.round(waitTimeMilliseconds / (1000 * 60 * 60));
+		const nextRunTime = new Date(Date.now() + waitTimeMilliseconds);
+		logger.info(`Next run scheduled for ${nextRunTime.toLocaleString()} (in ~${waitTimeHours} hours)`);
 		await new Promise(resolve => setTimeout(resolve, waitTimeMilliseconds));
 	}
 }
