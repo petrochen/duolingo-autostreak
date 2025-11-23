@@ -51,18 +51,23 @@ function loadConfig(configPath) {
 	}
 }
 
-// Function to get random time for next execution (8 AM to 11 PM)
+// Function to get random time for next execution (6 PM to 9 PM safe window)
 function getNextExecutionTime() {
-	const tomorrow = new Date();
-	tomorrow.setDate(tomorrow.getDate() + 1);
-	
-	// Random hour between 8 AM and 11 PM (15 hour window)
-	const hour = 8 + Math.floor(Math.random() * 15);
-	const minute = Math.floor(Math.random() * 60);
-	
-	tomorrow.setHours(hour, minute, 0, 0);
-	
-	const msUntilExecution = tomorrow - Date.now();
+	const now = new Date();
+	const next = new Date(now);
+
+	// Safe window: 18:00-21:00 (3 hour window before deadline)
+	const targetHour = 18 + Math.floor(Math.random() * 3); // 18, 19, or 20
+	const targetMinute = Math.floor(Math.random() * 60);   // 0-59
+
+	next.setHours(targetHour, targetMinute, 0, 0);
+
+	// If target time already passed today, schedule for tomorrow
+	if (next <= now) {
+		next.setDate(next.getDate() + 1);
+	}
+
+	const msUntilExecution = next - now;
 	return msUntilExecution;
 }
 
@@ -212,6 +217,8 @@ async function main() {
 			if (user.enabled) {
 				const result = await doLessonsForUser(user.jwt_token, user.username, config, logger);
 				allUserResults.push(result);
+
+				// Check and equip streak freeze after completing lessons
 				if (config.users.indexOf(user) < config.users.length - 1) {
 					const delay = config.settings.delay_between_users || 5;
 					logger.info(`Pausing for ${delay} seconds before next user...`);

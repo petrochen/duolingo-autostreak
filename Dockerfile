@@ -1,8 +1,9 @@
 # Используем Node.js 20 slim образ
 FROM node:20-slim
 
-# Создаем непривилегированного пользователя
-RUN useradd -m -r -s /bin/bash duolingo
+# Создаем непривилегированного пользователя с фиксированным UID 1000 (совпадает с node)
+# Удаляем существующего пользователя node и создаем duolingo с UID 1000
+RUN userdel -r node && useradd -u 1000 -m -r -s /bin/bash duolingo
 
 # Создаем директорию для приложения
 WORKDIR /app
@@ -17,9 +18,7 @@ RUN npm install
 COPY . .
 
 # Создаем директорию для логов и настраиваем права
-RUN mkdir -p /app/logs && \
-    chown -R duolingo:duolingo /app && \
-    chmod -R 755 /app
+RUN mkdir -p /app/logs &&     chown -R duolingo:duolingo /app &&     chmod -R 755 /app
 
 # Принудительно удаляем results.json, если это директория
 RUN rm -rf /app/results.json
